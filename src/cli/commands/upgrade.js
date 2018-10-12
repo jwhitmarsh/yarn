@@ -9,6 +9,8 @@ import Lockfile from '../../lockfile';
 import PackageRequest from '../../package-request.js';
 import {normalizePattern} from '../../util/normalize-pattern.js';
 import {Install} from './install.js';
+import {diffWithUnstable} from '../../util/semver';
+import semver from 'semver';
 
 // used to detect whether a semver range is simple enough to preserve when doing a --latest upgrade.
 // when not matched, the upgraded version range will default to `^` the same as the `add` command would.
@@ -65,6 +67,7 @@ function setUserRequestedPackageVersions(
         range: '',
         current: '',
         upgradeTo: newPattern,
+        updateType: '',
         workspaceName: '',
         workspaceLoc: '',
       });
@@ -228,11 +231,24 @@ export async function getOutdated(
 
   normalizeScope();
 
+  const getupdateType = (current, latest) => {
+    const v1 = semver.parse(current);
+    const v2 = semver.parse(latest);
+
+    if (v1 === null || v2 === null) {
+      return 'unknown';
+    }
+
+    const updateType = diffWithUnstable(v1, v2);
+    return updateType === 'major' ? 'Major' : updateType;
+  };
+
   const deps = (await PackageRequest.getOutdatedPackages(lockfile, install, config, reporter, patterns, flags))
     .filter(versionFilter)
     .filter(scopeFilter.bind(this, flags));
   deps.forEach(dep => {
     dep.upgradeTo = buildPatternToUpgradeTo(dep, flags);
+    dep.updateType = getupdateType(dep.current, dep.latest);
     reporter.verbose(reporter.lang('verboseUpgradeBecauseOutdated', dep.name, dep.upgradeTo));
   });
 

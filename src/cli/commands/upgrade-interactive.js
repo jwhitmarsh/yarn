@@ -54,9 +54,10 @@ export async function run(config: Config, reporter: Reporter, flags: Object, arg
     range: 'latest'.length,
     [outdatedFieldName]: 'to'.length,
     workspaceName: 'workspace'.length,
+    updateType: 'prerelease'.length,
   };
 
-  const keysWithDynamicLength = ['name', 'current', outdatedFieldName];
+  const keysWithDynamicLength = ['name', 'current', outdatedFieldName, 'updateType'];
 
   if (!flags.latest) {
     maxLengthArr.range = 'range'.length;
@@ -89,11 +90,12 @@ export async function run(config: Config, reporter: Reporter, flags: Object, arg
     const latest = colorizeDiff(dep.current, padding(outdatedFieldName), reporter);
     const url = reporter.format.cyan(dep.url);
     const range = reporter.format.blue(flags.latest ? 'latest' : padding('range'));
+    const updateType = padding('updateType');
     if (usesWorkspaces) {
       const workspace = padding('workspaceName');
-      return `${name}  ${range}  ${current}  ❯  ${latest}  ${workspace}  ${url}`;
+      return `${name}  ${range}  ${updateType}  ${current}  ❯  ${latest}  ${workspace}  ${url}`;
     } else {
-      return `${name}  ${range}  ${current}  ❯  ${latest}  ${url}`;
+      return `${name}  ${range}  ${updateType}  ${current}  ❯  ${latest}  ${url}`;
     }
   };
 
@@ -101,13 +103,14 @@ export async function run(config: Config, reporter: Reporter, flags: Object, arg
     const name = headerPadding('name', 'name');
     const range = headerPadding('range', 'range');
     const from = headerPadding('from', 'current');
+    const updateType = headerPadding('updateType', 'updateType');
     const to = headerPadding('to', outdatedFieldName);
     const url = reporter.format.bold.underline('url');
     if (usesWorkspaces) {
       const workspace = headerPadding('workspace', 'workspaceName');
-      return `  ${name}  ${range}  ${from}     ${to}  ${workspace}  ${url}`;
+      return `  ${name}  ${range}  ${updateType}  ${from}     ${to}  ${workspace}  ${url}`;
     } else {
-      return `  ${name}  ${range}  ${from}     ${to}  ${url}`;
+      return `  ${name}  ${range}  ${updateType}  ${from}     ${to}  ${url}`;
     }
   };
 
