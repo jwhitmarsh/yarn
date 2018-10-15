@@ -41,12 +41,13 @@ export async function run(config: Config, reporter: Reporter, flags: Object, arg
         info.current,
         colorizeDiff(info.current, info.wanted, reporter),
         reporter.format.cyan(info.latest),
+        info.updateType,
         info.workspaceName || '',
         getNameFromHint(info.hint),
         reporter.format.cyan(info.url),
       ];
       if (!usesWorkspaces) {
-        row.splice(4, 1);
+        row.splice(5, 1);
       }
       return row;
     });
@@ -56,9 +57,9 @@ export async function run(config: Config, reporter: Reporter, flags: Object, arg
     const green = reporter.format.green('<green>');
     reporter.info(reporter.lang('legendColorsForVersionUpdates', red, yellow, green));
 
-    const header = ['Package', 'Current', 'Wanted', 'Latest', 'Workspace', 'Package Type', 'URL'];
+    const header = ['Package', 'Current', 'Wanted', 'Latest', 'Version Diff', 'Workspace', 'Package Type', 'URL'];
     if (!usesWorkspaces) {
-      header.splice(4, 1);
+      header.splice(5, 1);
     }
     reporter.table(header, body);
 

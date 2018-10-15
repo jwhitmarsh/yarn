@@ -6,6 +6,7 @@ import type PackageResolver from './package-resolver.js';
 import type {Reporter} from './reporters/index.js';
 import type Config from './config.js';
 import type {Install} from './cli/commands/install';
+import {diffWithUnstable} from './util/semver';
 
 import path from 'path';
 
@@ -402,6 +403,18 @@ export default class PackageRequest {
       );
     }
 
+    const getupdateType = (current, latest) => {
+      const v1 = semver.parse(current);
+      const v2 = semver.parse(latest);
+
+      if (v1 === null || v2 === null) {
+        return 'unknown';
+      }
+
+      const updateType = diffWithUnstable(v1, v2);
+      return updateType === 'major' ? 'Major' : updateType;
+    };
+
     const deps = await Promise.all(
       depReqPatterns.map(async ({pattern, hint, workspaceName, workspaceLoc}): Promise<Dependency> => {
         const locked = lockfile.getLocked(pattern);
@@ -434,6 +447,7 @@ export default class PackageRequest {
           hint,
           range: normalized.range,
           upgradeTo: '',
+          updateType: getupdateType(current, latest),
           workspaceName: workspaceName || '',
           workspaceLoc: workspaceLoc || '',
         };
